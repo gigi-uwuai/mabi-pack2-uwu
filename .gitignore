@@ -1,0 +1,8 @@
+/target
+/.idea
+salt_keys.json
+/package/.kibee
+check_output.txt
+.DS_Store
+.env
+.env.*
