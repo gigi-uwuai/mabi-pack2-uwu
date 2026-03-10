@@ -1,7 +1,5 @@
 # Mabinogi Pack Utilities 2
 
-**It seems that the game developers don't want their packages being unpacked, so this repository WILL NOT UPDATE ANY MORE.**
-
 This repository is based on the original [`regomne/mabi-pack2`](https://github.com/regomne/mabi-pack2) project. This version is a maintained derivative/fork with additional changes, while keeping credit to the original work.
 
 New pack utilities for Mabinogi.
