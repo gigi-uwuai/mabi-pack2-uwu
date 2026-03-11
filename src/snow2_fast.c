@@ -235,7 +235,7 @@ void snow_loadkey_fast(Snow2_ctx* ctx,u32 IV3,u32 IV2,u32 IV1,u32 IV0)
  * 
  */
 
-INLINE void snow_keystream_fast(Snow2_ctx* ctx, u32 *keystream_block) 
+static INLINE void snow_keystream_fast(Snow2_ctx* ctx, u32 *keystream_block) 
 {
       u32 fsmtmp;
 

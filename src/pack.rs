@@ -6,7 +6,7 @@ use byteorder::{LittleEndian, WriteBytesExt};
 use miniz_oxide::deflate::compress_to_vec_zlib;
 use std::fs::{File, OpenOptions};
 use std::io::{BufWriter, Read, Seek, SeekFrom, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
 fn get_rel_path(root_dir: &str, full_path: &str) -> Result<String, Error> {
@@ -91,6 +91,91 @@ fn ceil_1024(v: u64) -> u64 {
     (v + 1023) & 0u64.wrapping_sub(1024)
 }
 
+fn pack_requirements_text() -> &'static str {
+    "Packing requirements:\n  - Output filename must start with a letter after 'd' (for example: e, f, g, ...). Do not start with a, b, c, or d.\n  - Output filename must follow: <name>_<number>.it\n  - <number> must be 1 to 5 digits (0 to 99999).\n  - Input folder must contain a top-level folder that contains data/ inside it.\n    Example valid structure: test/data/sound/chick.wav\n    Example invalid structure: data/sound/chick.wav"
+}
+
+fn validate_output_name(output_fname: &str) -> Result<(), Error> {
+    let final_name = common::get_final_file_name(output_fname)?;
+    let lower = final_name.to_ascii_lowercase();
+
+    if !lower.ends_with(".it") {
+        return Err(Error::msg(format!(
+            "Invalid output filename '{}'.\n{}",
+            final_name,
+            pack_requirements_text()
+        )));
+    }
+
+    let stem = final_name.strip_suffix(".it").unwrap_or(&final_name);
+    let underscore_idx = stem.rfind('_').ok_or_else(|| {
+        Error::msg(format!(
+            "Invalid output filename '{}'. Missing '_' separator before the number.\n{}",
+            final_name,
+            pack_requirements_text()
+        ))
+    })?;
+
+    let name_part = &stem[..underscore_idx];
+    let number_part = &stem[underscore_idx + 1..];
+
+    if name_part.is_empty() || number_part.is_empty() {
+        return Err(Error::msg(format!(
+            "Invalid output filename '{}'.\n{}",
+            final_name,
+            pack_requirements_text()
+        )));
+    }
+
+    let first = name_part.chars().next().unwrap().to_ascii_lowercase();
+    if !('e'..='z').contains(&first) {
+        return Err(Error::msg(format!(
+            "Invalid output filename '{}'. The name must start with a letter after 'd'.\n{}",
+            final_name,
+            pack_requirements_text()
+        )));
+    }
+
+    if number_part.len() > 5 || !number_part.chars().all(|c| c.is_ascii_digit()) {
+        return Err(Error::msg(format!(
+            "Invalid output filename '{}'. The numeric suffix must be 1 to 5 digits.\n{}",
+            final_name,
+            pack_requirements_text()
+        )));
+    }
+
+    Ok(())
+}
+
+fn validate_input_structure(input_folder: &str) -> Result<(), Error> {
+    let root = Path::new(input_folder);
+    if !root.is_dir() {
+        return Err(Error::msg(format!(
+            "Input folder '{}' does not exist or is not a directory.\n{}",
+            input_folder,
+            pack_requirements_text()
+        )));
+    }
+
+    let has_direct_data = root.join("data").is_dir();
+    let top_level_dirs: Vec<PathBuf> = std::fs::read_dir(root)?
+        .filter_map(|e| e.ok())
+        .map(|e| e.path())
+        .filter(|p| p.is_dir())
+        .collect();
+    let has_nested_data = top_level_dirs.iter().any(|dir| dir.join("data").is_dir());
+
+    if has_direct_data || !has_nested_data {
+        return Err(Error::msg(format!(
+            "Invalid input folder structure '{}'. Expected a top-level folder containing data/.\n{}",
+            input_folder,
+            pack_requirements_text()
+        )));
+    }
+
+    Ok(())
+}
+
 pub fn run_pack(
     input_folder: &str,
     output_fname: &str,
@@ -108,6 +193,9 @@ pub fn run_pack_with_salt(
     compress_ext: Vec<&str>,
     salt: Option<&str>,
 ) -> Result<(), Error> {
+    validate_output_name(output_fname)?;
+    validate_input_structure(input_folder)?;
+
     let file_names: Vec<String> = WalkDir::new(input_folder)
         .into_iter()
         .filter_map(|e| e.ok())

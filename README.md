@@ -82,6 +82,27 @@ mabi-pack2 pack -i D:\Mabinogi\pkg -o custom_01.it
 mabi-pack2 pack -i D:\Mabinogi\pkg -o custom_01.it -s "CuAVPMZx:E96:(Rxdw"
 ```
 
+### Important packing rules
+
+When creating a new `.it` file, keep these requirements in mind:
+
+- **The output filename should start with a letter after `d`** — for example `e`, `f`, `g`, etc. Avoid starting the pack name with `a`, `b`, `c`, or `d`.
+- **The output filename should follow this format:**
+  - `<name>_<number>.it`
+  - where `<number>` is **1 to 5 digits** (`0` to `99999`)
+- **The input folder must include a top-level folder containing `data/` inside it.**
+  - Correct structure: `test/data/sound/chick.wav`
+  - Incorrect structure: `data/sound/chick.wav`
+
+Example:
+
+```text
+test/
+└── data/
+    └── sound/
+        └── chick.wav
+```
+
 *Note:* Renaming of \*.it files is not allowed, or extracting and listing will fail.
 
 ## License
