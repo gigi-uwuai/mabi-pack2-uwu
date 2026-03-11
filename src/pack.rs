@@ -92,7 +92,7 @@ fn ceil_1024(v: u64) -> u64 {
 }
 
 fn pack_requirements_text() -> &'static str {
-    "Packing requirements:\n  - Output filename must start with a letter after 'd' (for example: e, f, g, ...). Do not start with a, b, c, or d.\n  - Output filename must follow: <name>_<number>.it\n  - <number> must be 1 to 5 digits (0 to 99999).\n  - Input folder must contain a top-level folder that contains data/ inside it.\n    Example valid structure: test/data/sound/chick.wav\n    Example invalid structure: data/sound/chick.wav"
+    "Packing requirements:\n  - Output filename must follow: <name>_<number>.it\n  - <name> must be a single name part (no extra underscores).\n  - <name> must start with a letter after 'd' (for example: e, f, g, ...).\n  - <number> must be 1 to 5 digits (0 to 99999).\n  - Input folder must contain a top-level folder that contains data/ inside it.\n    Example valid structure: test/data/sound/chick.wav\n    Example invalid structure: data/sound/chick.wav"
 }
 
 fn validate_output_name(output_fname: &str) -> Result<(), Error> {
@@ -115,6 +115,14 @@ fn validate_output_name(output_fname: &str) -> Result<(), Error> {
             pack_requirements_text()
         ))
     })?;
+
+    if stem[..underscore_idx].contains('_') {
+        return Err(Error::msg(format!(
+            "Invalid output filename '{}'. Only one name part is allowed before the numeric suffix.\n{}",
+            final_name,
+            pack_requirements_text()
+        )));
+    }
 
     let name_part = &stem[..underscore_idx];
     let number_part = &stem[underscore_idx + 1..];

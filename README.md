@@ -86,10 +86,14 @@ mabi-pack2 pack -i D:\Mabinogi\pkg -o custom_01.it -s "CuAVPMZx:E96:(Rxdw"
 
 When creating a new `.it` file, keep these requirements in mind:
 
-- **The output filename should start with a letter after `d`** — for example `e`, `f`, `g`, etc. Avoid starting the pack name with `a`, `b`, `c`, or `d`.
-- **The output filename should follow this format:**
+- **The output filename should follow this exact format:**
   - `<name>_<number>.it`
+  - `<name>` must be a **single name part** (no extra underscores)
+  - `<name>` must start with a letter after `d` — for example `e`, `f`, `g`, etc.
   - where `<number>` is **1 to 5 digits** (`0` to `99999`)
+- Examples:
+  - Valid: `eapple_01.it`, `zoom_711.it`, `uppercut_0.it`
+  - Invalid: `apple_01.it`, `dapple_01.it`, `e_chick_01.it`
 - **The input folder must include a top-level folder containing `data/` inside it.**
   - Correct structure: `test/data/sound/chick.wav`
   - Incorrect structure: `data/sound/chick.wav`
